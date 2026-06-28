@@ -16,6 +16,10 @@ def get_db_connection():
 def home():
     return render_template('index.html')
 
+@app.route('/add')
+def add_recipe_page():
+    return render_template('add.html')
+
 # API 1: Get ALL recipes (for the main feed)
 @app.route('/api/recipes')
 def get_recipes():
