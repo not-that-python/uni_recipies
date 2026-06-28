@@ -77,5 +77,75 @@ def get_recipe_detail(recipe_id):
         'ingredients': [dict(row) for row in ingredients]
     })
 
+# API 4: Add a new recipe
+@app.route('/api/recipes', methods=['POST'])
+def add_recipe():
+    data = request.get_json()
+    
+    # Validate required fields
+    required = ['name', 'description', 'cooking_time', 'cost', 'instructions', 'ingredients']
+    if not all(field in data for field in required):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 1. Insert the recipe
+        cursor.execute('''
+            INSERT INTO recipes (name, description, cooking_time, cost, instructions, image_url)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (
+            data['name'],
+            data['description'],
+            data['cooking_time'],
+            data['cost'],
+            data['instructions'],
+            data.get('image_url', 'https://via.placeholder.com/300x200/F0F0F0/555555?text=New+Recipe')
+        ))
+        
+        recipe_id = cursor.lastrowid
+        
+        # 2. Process each ingredient
+        for ingredient_data in data['ingredients']:
+            ingredient_name = ingredient_data['name'].strip().capitalize()
+            quantity = ingredient_data.get('quantity', '')
+            
+            # Check if ingredient exists, if not create it
+            cursor.execute('SELECT id FROM ingredients WHERE name = ?', (ingredient_name,))
+            result = cursor.fetchone()
+            
+            if result:
+                ingredient_id = result[0]
+            else:
+                cursor.execute('INSERT INTO ingredients (name) VALUES (?)', (ingredient_name,))
+                ingredient_id = cursor.lastrowid
+            
+            # Link ingredient to recipe
+            cursor.execute('''
+                INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity)
+                VALUES (?, ?, ?)
+            ''', (recipe_id, ingredient_id, quantity))
+        
+        conn.commit()
+        return jsonify({
+            'message': 'Recipe added successfully!',
+            'recipe_id': recipe_id
+        }), 201
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+# API 5: Get all ingredients (for autocomplete)
+@app.route('/api/ingredients')
+def get_ingredients():
+    conn = get_db_connection()
+    ingredients = conn.execute('SELECT name FROM ingredients ORDER BY name').fetchall()
+    conn.close()
+    return jsonify([row[0] for row in ingredients])
+
 if __name__ == '__main__':
     app.run(debug=True)
