@@ -1,0 +1,396 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Grub Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f7f3ee;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 2rem;
+            color: #2d3436;
+            margin-bottom: 5px;
+        }
+        h1 small {
+            font-size: 0.9rem;
+            font-weight: normal;
+            color: #e17055;
+            background: #ffeaa7;
+            padding: 2px 12px;
+            border-radius: 20px;
+        }
+        .subhead {
+            color: #636e72;
+            margin-bottom: 20px;
+            border-left: 4px solid #e17055;
+            padding-left: 12px;
+        }
+
+        /* The Smart Search Bar */
+        .pantry-search {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .pantry-search h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b2bec3;
+            margin-bottom: 10px;
+        }
+        .tag-input-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 2px dashed #dfe6e9;
+            border-radius: 12px;
+            min-height: 60px;
+            align-items: center;
+        }
+        .tag {
+            background: #00b894;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.7;
+        }
+        .tag .remove:hover {
+            opacity: 1;
+        }
+        #ingredient-input {
+            border: none;
+            padding: 8px;
+            flex: 1;
+            min-width: 120px;
+            outline: none;
+            font-size: 1rem;
+        }
+        .search-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e17055;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #d63031;
+            transform: scale(0.98);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #dfe6e9;
+        }
+
+        /* Recipe Cards */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+            transition: transform 0.15s;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+        .card img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: #dfe6e9;
+        }
+        .card-body {
+            padding: 16px;
+        }
+        .card-body h4 {
+            margin-bottom: 6px;
+        }
+        .meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: #636e72;
+        }
+        .meta span {
+            background: #f1f2f6;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .cost-badge {
+            background: #ffeaa7 !important;
+            color: #6c5200;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            max-width: 500px;
+            width: 90%;
+            padding: 30px;
+            border-radius: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 12px; right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #b2bec3;
+        }
+        .modal ul {
+            list-style: none;
+            margin: 15px 0;
+        }
+        .modal ul li {
+            padding: 6px 0;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 10px;
+            color: #b2bec3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🍳 Student Grub <small>Cheap & Fast</small></h1>
+    <p class="subhead">⬇️ Type what you have in your fridge. We'll tell you what to cook.</p>
+
+    <!-- PANTRY SEARCH -->
+    <div class="pantry-search">
+        <h3>📦 What's in your kitchen?</h3>
+        <div class="tag-input-area" id="tag-area">
+            <!-- Dynamic tags will go here -->
+            <input type="text" id="ingredient-input" placeholder="e.g., Egg, Pasta, Butter..." autofocus>
+        </div>
+        <div class="search-actions">
+            <button class="btn btn-primary" id="search-btn">🔍 Find Recipes</button>
+            <button class="btn btn-outline" id="reset-btn">Reset</button>
+        </div>
+    </div>
+
+    <!-- RECIPE FEED -->
+    <div id="recipe-feed">
+        <div class="recipe-grid" id="recipe-grid">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- DETAIL MODAL -->
+    <div class="modal" id="recipe-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <h2 id="modal-title">Recipe Name</h2>
+            <div style="display:flex; gap:12px; margin: 8px 0 16px;">
+                <span id="modal-time" class="meta">⏱️ 10 min</span>
+                <span id="modal-cost" class="meta">💰 Cheap</span>
+            </div>
+            <h4>🛒 Ingredients</h4>
+            <ul id="modal-ingredients"></ul>
+            <h4>📖 Instructions</h4>
+            <p id="modal-instructions" style="line-height:1.6; white-space: pre-line;"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE ---
+        let ingredients = [];
+        const inputField = document.getElementById('ingredient-input');
+        const tagArea = document.getElementById('tag-area');
+        const grid = document.getElementById('recipe-grid');
+        const modal = document.getElementById('recipe-modal');
+
+        // --- TAG LOGIC ---
+        inputField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addIngredient(inputField.value.trim());
+            }
+        });
+
+        function addIngredient(name) {
+            if (!name) return;
+            // Capitalize first letter for consistency
+            name = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+            if (!ingredients.includes(name)) {
+                ingredients.push(name);
+                renderTags();
+            }
+            inputField.value = '';
+            inputField.focus();
+        }
+
+        function removeIngredient(name) {
+            ingredients = ingredients.filter(i => i !== name);
+            renderTags();
+        }
+
+        function renderTags() {
+            // Keep the input field
+            const input = document.getElementById('ingredient-input');
+            tagArea.innerHTML = '';
+            
+            ingredients.forEach(name => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.innerHTML = `${name} <span class="remove" data-name="${name}">✕</span>`;
+                tagArea.appendChild(tag);
+            });
+            
+            // Re-add the input field
+            tagArea.appendChild(input);
+            input.focus();
+
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.tag .remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    removeIngredient(e.target.dataset.name);
+                });
+            });
+        }
+
+        // --- API CALLS ---
+        async function fetchAllRecipes() {
+            const res = await fetch('/api/recipes');
+            const data = await res.json();
+            renderRecipes(data);
+        }
+
+        async function searchRecipes() {
+            if (ingredients.length === 0) {
+                alert('Add at least one ingredient to search!');
+                return;
+            }
+            const res = await fetch('/api/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ingredients: ingredients })
+            });
+            const data = await res.json();
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="empty-state">😅 No recipes found. Try adding more ingredients or remove some filters.</div>`;
+            } else {
+                renderRecipes(data);
+            }
+        }
+
+        function renderRecipes(recipes) {
+            grid.innerHTML = recipes.map(r => `
+                <div class="card" onclick="openModal(${r.id})">
+                    <img src="${r.image_url || 'https://via.placeholder.com/300x200/F0F0F0/555555?text=No+Image'}" alt="${r.name}">
+                    <div class="card-body">
+                        <h4>${r.name}</h4>
+                        <p style="font-size:0.85rem; color:#636e72; margin:4px 0 8px;">${r.description}</p>
+                        <div class="meta">
+                            <span>⏱️ ${r.cooking_time}m</span>
+                            <span class="cost-badge">${r.cost === 1 ? '💰 Cheap' : r.cost === 2 ? '💰💰 Mid' : '💰💰💰 Treat'}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- MODAL LOGIC ---
+        async function openModal(id) {
+            const res = await fetch(`/api/recipe/${id}`);
+            const data = await res.json();
+            const r = data.recipe;
+            
+            document.getElementById('modal-title').textContent = r.name;
+            document.getElementById('modal-time').textContent = `⏱️ ${r.cooking_time} min`;
+            document.getElementById('modal-cost').textContent = r.cost === 1 ? '💰 Cheap' : r.cost === 2 ? '💰💰 Mid' : '💰💰💰 Treat';
+            document.getElementById('modal-instructions').textContent = r.instructions;
+            
+            const ingList = document.getElementById('modal-ingredients');
+            ingList.innerHTML = data.ingredients.map(i => 
+                `<li>• ${i.quantity} of <strong>${i.name}</strong></li>`
+            ).join('');
+            
+            modal.classList.add('active');
+        }
+
+        document.getElementById('modal-close').addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+
+        // --- EVENT BINDING ---
+        document.getElementById('search-btn').addEventListener('click', searchRecipes);
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            ingredients = [];
+            renderTags();
+            fetchAllRecipes();
+        });
+
+        // --- INIT ---
+        fetchAllRecipes();
+    </script>
+</body>
+</html>
