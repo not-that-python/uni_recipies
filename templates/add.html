@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Recipe - Student Grub Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        body {
+            background: #f7f3ee;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2d3436;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #2d3436;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dfe6e9;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .ingredient-entry {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .ingredient-entry input {
+            flex: 1;
+        }
+        .ingredient-entry input:first-child {
+            flex: 2;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #e17055;
+            color: white;
+        }
+        .btn-secondary {
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+        .btn-success {
+            background: #00b894;
+            color: white;
+        }
+        .btn-danger {
+            background: #d63031;
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .ingredient-list {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            min-height: 40px;
+        }
+        .ingredient-tag {
+            background: #dfe6e9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 4px;
+            font-size: 0.9rem;
+        }
+        .ingredient-tag .remove {
+            cursor: pointer;
+            color: #d63031;
+            margin-left: 6px;
+            font-weight: bold;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #636e72;
+            text-decoration: none;
+        }
+        .success-msg {
+            background: #00b894;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .error-msg {
+            background: #d63031;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .cost-options {
+            display: flex;
+            gap: 12px;
+        }
+        .cost-options label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📝 Add New Recipe</h1>
+    
+    <div id="success-msg" class="success-msg">✅ Recipe added successfully!</div>
+    <div id="error-msg" class="error-msg">❌ Error: <span id="error-text"></span></div>
+
+    <form id="recipe-form">
+        <div class="form-group">
+            <label>Recipe Name *</label>
+            <input type="text" id="recipe-name" required placeholder="e.g., Spicy Ramen">
+        </div>
+
+        <div class="form-group">
+            <label>Description *</label>
+            <input type="text" id="recipe-description" required placeholder="Brief description">
+        </div>
+
+        <div class="form-group">
+            <label>Cooking Time (minutes) *</label>
+            <input type="number" id="cooking-time" required min="1" placeholder="15">
+        </div>
+
+        <div class="form-group">
+            <label>Cost *</label>
+            <div class="cost-options">
+                <label><input type="radio" name="cost" value="1" checked> 💰 Cheap</label>
+                <label><input type="radio" name="cost" value="2"> 💰💰 Mid</label>
+                <label><input type="radio" name="cost" value="3"> 💰💰💰 Treat</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Instructions *</label>
+            <textarea id="instructions" required placeholder="Step by step instructions..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Image URL (optional)</label>
+            <input type="url" id="image-url" placeholder="https://example.com/image.jpg">
+        </div>
+
+        <div class="form-group">
+            <label>Ingredients *</label>
+            <div style="display:flex; gap:10px; margin-bottom:8px;">
+                <input type="text" id="ingredient-name" placeholder="e.g., Egg" style="flex:2;">
+                <input type="text" id="ingredient-quantity" placeholder="e.g., 2 large" style="flex:1;">
+                <button type="button" class="btn btn-secondary" onclick="addIngredient()">+ Add</button>
+            </div>
+            <div class="ingredient-list" id="ingredient-list">
+                <span style="color:#b2bec3; font-size:0.9rem;">No ingredients added yet</span>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary" style="flex:1;">✅ Submit Recipe</button>
+            <button type="reset" class="btn btn-secondary">Clear All</button>
+        </div>
+    </form>
+
+    <a href="/" class="back-link">← Back to all recipes</a>
+
+    <script>
+        let ingredients = [];
+
+        function addIngredient() {
+            const nameInput = document.getElementById('ingredient-name');
+            const quantityInput = document.getElementById('ingredient-quantity');
+            const name = nameInput.value.trim();
+            const quantity = quantityInput.value.trim();
+
+            if (!name) {
+                alert('Please enter an ingredient name');
+                return;
+            }
+
+            // Capitalize first letter
+            const formattedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+            
+            ingredients.push({ name: formattedName, quantity: quantity });
+            renderIngredients();
+            
+            nameInput.value = '';
+            quantityInput.value = '';
+            nameInput.focus();
+        }
+
+        function removeIngredient(index) {
+            ingredients.splice(index, 1);
+            renderIngredients();
+        }
+
+        function renderIngredients() {
+            const container = document.getElementById('ingredient-list');
+            if (ingredients.length === 0) {
+                container.innerHTML = '<span style="color:#b2bec3; font-size:0.9rem;">No ingredients added yet</span>';
+                return;
+            }
+            
+            container.innerHTML = ingredients.map((item, index) => `
+                <span class="ingredient-tag">
+                    ${item.name} ${item.quantity ? '(' + item.quantity + ')' : ''}
+                    <span class="remove" onclick="removeIngredient(${index})">✕</span>
+                </span>
+            `).join('');
+        }
+
+        // Allow Enter key to add ingredient
+        document.getElementById('ingredient-name').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addIngredient();
+            }
+        });
+        document.getElementById('ingredient-quantity').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addIngredient();
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('recipe-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide previous messages
+            document.getElementById('success-msg').style.display = 'none';
+            document.getElementById('error-msg').style.display = 'none';
+
+            // Validate ingredients
+            if (ingredients.length === 0) {
+                alert('Please add at least one ingredient');
+                return;
+            }
+
+            // Get cost value
+            const cost = document.querySelector('input[name="cost"]:checked').value;
+
+            const recipeData = {
+                name: document.getElementById('recipe-name').value.trim(),
+                description: document.getElementById('recipe-description').value.trim(),
+                cooking_time: parseInt(document.getElementById('cooking-time').value),
+                cost: parseInt(cost),
+                instructions: document.getElementById('instructions').value.trim(),
+                image_url: document.getElementById('image-url').value.trim() || null,
+                ingredients: ingredients
+            };
+
+            try {
+                const response = await fetch('/api/recipes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipeData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('success-msg').style.display = 'block';
+                    document.getElementById('recipe-form').reset();
+                    ingredients = [];
+                    renderIngredients();
+                    // Scroll to success message
+                    document.getElementById('success-msg').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    document.getElementById('error-text').textContent = result.error || 'Unknown error';
+                    document.getElementById('error-msg').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('error-text').textContent = error.message;
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        });
+
+        // Handle Enter key on form fields (to prevent accidental submit)
+        document.querySelectorAll('input, textarea').forEach(field => {
+            field.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && field.type !== 'submit') {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
