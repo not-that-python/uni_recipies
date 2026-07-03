@@ -138,28 +138,57 @@
 <body>
 
     <h1>📝 Add New Recipe</h1>
+
+<!-- ADD THIS HELP SECTION -->
+<div style="background: #ffeaa7; padding: 16px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #fdcb6e;">
+    <details>
+        <summary style="font-weight: 600; cursor: pointer; color: #2d3436;">
+            📖 How to add a recipe (click to expand)
+        </summary>
+        <div style="margin-top: 12px; font-size: 0.95rem; line-height: 1.6; color: #2d3436;">
+            <ol style="padding-left: 20px;">
+                <li><strong>Fill in recipe details</strong> - Name, description, cooking time, cost level, and step-by-step instructions</li>
+                <li><strong>Add ingredients one by one</strong> - Type the ingredient name (e.g., "Egg") and quantity (e.g., "2 large"), then click "+ Add" or press Enter</li>
+                <li><strong>Keep adding</strong> until all ingredients are listed</li>
+                <li><strong>Click "Submit Recipe"</strong> - Your recipe will be saved and available immediately</li>
+            </ol>
+            <p style="margin-top: 8px; font-size: 0.85rem; color: #636e72;">
+                💡 <strong>Tip:</strong> Ingredient names are automatically capitalized. If an ingredient already exists in our database, it will be reused!
+                </p>
+            </div>
+        </details>
+    </div>
     
+
     <div id="success-msg" class="success-msg">✅ Recipe added successfully!</div>
     <div id="error-msg" class="error-msg">❌ Error: <span id="error-text"></span></div>
 
     <form id="recipe-form">
         <div class="form-group">
-            <label>Recipe Name *</label>
+            <label>Recipe Name *
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="Give your recipe a catchy name!">ⓘ</span>
+            </label>
             <input type="text" id="recipe-name" required placeholder="e.g., Spicy Ramen">
         </div>
 
         <div class="form-group">
-            <label>Description *</label>
+            <label>Description *
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="Give a little more info on what this recipe is about">ⓘ</span>
+            </label>
             <input type="text" id="recipe-description" required placeholder="Brief description">
         </div>
 
         <div class="form-group">
-            <label>Cooking Time (minutes) *</label>
+            <label>Cooking Time (minutes) *
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="How will it take? Include prep time and making time">ⓘ</span>
+            </label>
             <input type="number" id="cooking-time" required min="1" placeholder="15">
         </div>
 
         <div class="form-group">
-            <label>Cost *</label>
+            <label>Cost *
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="Cheap = under £3, Mid = £3-£6, Treat = over £6">ⓘ</span>
+            </label>
             <div class="cost-options">
                 <label><input type="radio" name="cost" value="1" checked> 💰 Cheap</label>
                 <label><input type="radio" name="cost" value="2"> 💰💰 Mid</label>
@@ -168,7 +197,9 @@
         </div>
 
         <div class="form-group">
-            <label>Instructions *</label>
+            <label>Instructions *
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="Add clear instructions and steps in sequence, like teaching a 5 year old">ⓘ</span>
+            </label>
             <textarea id="instructions" required placeholder="Step by step instructions..."></textarea>
         </div>
 

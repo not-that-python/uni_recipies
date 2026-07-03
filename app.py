@@ -3,9 +3,20 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import sqlite3
 import json
+from dotenv import load_dotenv
+import os 
 
 app = Flask(__name__)
 CORS(app)
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the secret key
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-dev-key-for-testing')
+
+# Use it in your app
+app.secret_key = SECRET_KEY
 
 def get_db_connection():
     conn = sqlite3.connect('recipes.db')
@@ -150,6 +161,10 @@ def get_ingredients():
     ingredients = conn.execute('SELECT name FROM ingredients ORDER BY name').fetchall()
     conn.close()
     return jsonify([row[0] for row in ingredients])
+
+@app.route('/help')
+def help_page():
+    return render_template('help.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
