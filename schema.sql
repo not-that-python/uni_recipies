@@ -2,7 +2,7 @@
 
 -- 1. The Recipes Table
 CREATE TABLE recipes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
     cooking_time INTEGER NOT NULL, -- in minutes
@@ -13,7 +13,7 @@ CREATE TABLE recipes (
 
 -- 2. The Ingredients Table (Master list)
 CREATE TABLE ingredients (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT UNIQUE NOT NULL
 );
 
@@ -28,7 +28,7 @@ CREATE TABLE recipe_ingredients (
 
 -- 4. The Categories Table (Master list, e.g. name="Indian" type="Cuisine", name="Salad" type="Dish Type")
 CREATE TABLE categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
     UNIQUE(name, type)
