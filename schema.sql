@@ -26,6 +26,23 @@ CREATE TABLE recipe_ingredients (
     FOREIGN KEY (ingredient_id) REFERENCES ingredients (id)
 );
 
+-- 4. The Categories Table (Master list, e.g. name="Indian" type="Cuisine", name="Salad" type="Dish Type")
+CREATE TABLE categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    UNIQUE(name, type)
+);
+
+-- 5. The Junction Table (Links recipes to categories, many-to-many)
+CREATE TABLE recipe_categories (
+    recipe_id INTEGER,
+    category_id INTEGER,
+    PRIMARY KEY (recipe_id, category_id),
+    FOREIGN KEY (recipe_id) REFERENCES recipes (id),
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+);
+
 -- Let's seed some student-friendly data
 INSERT INTO recipes (name, description, cooking_time, cost, instructions, image_url) 
 VALUES 
@@ -60,3 +77,18 @@ INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (4, 1
 INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (4, 14, '1 can');
 INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (4, 15, '1 pinch');
 INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (4, 16, '1 knob');
+
+-- Categories (freeform, but grouped by type so the UI can facet on them)
+INSERT INTO categories (name, type) VALUES
+    ('Cooked', 'Dish Type'), ('Baked', 'Dish Type'), ('Snack', 'Dish Type'),
+    ('British', 'Cuisine'), ('Asian', 'Cuisine'), ('Italian', 'Cuisine');
+
+-- Category links
+-- Recipe 1: Mug Omelette -> Cooked, British
+INSERT INTO recipe_categories (recipe_id, category_id) VALUES (1, 1), (1, 4);
+-- Recipe 2: Stir-fry -> Cooked, Asian
+INSERT INTO recipe_categories (recipe_id, category_id) VALUES (2, 1), (2, 5);
+-- Recipe 3: Pasta Bake -> Baked, Italian
+INSERT INTO recipe_categories (recipe_id, category_id) VALUES (3, 2), (3, 6);
+-- Recipe 4: Beans on Toast -> Cooked, Snack, British
+INSERT INTO recipe_categories (recipe_id, category_id) VALUES (4, 1), (4, 3), (4, 4);

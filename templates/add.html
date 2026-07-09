@@ -91,15 +91,23 @@
             background: #dfe6e9;
             padding: 4px 12px;
             border-radius: 20px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
             margin: 4px;
             font-size: 0.9rem;
         }
         .ingredient-tag .remove {
             cursor: pointer;
             color: #d63031;
-            margin-left: 6px;
             font-weight: bold;
+        }
+        .category-tag {
+            color: #fff;
+        }
+        .category-tag .remove {
+            color: rgba(255,255,255,0.85);
         }
         .back-link {
             display: inline-block;
@@ -220,6 +228,22 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label>Categories (optional)
+                <span style="cursor:help; color:#b2bec3; font-size:0.8rem;" title="Tag this recipe so people can filter by it, e.g. type 'Cuisine' + 'Indian', or 'Dish Type' + 'Salad'">ⓘ</span>
+            </label>
+            <div style="display:flex; gap:10px; margin-bottom:8px;">
+                <input type="text" id="category-type" placeholder="e.g., Cuisine" list="category-type-options" style="flex:1;">
+                <input type="text" id="category-name" placeholder="e.g., Indian" list="category-name-options" style="flex:1;">
+                <button type="button" class="btn btn-secondary" onclick="addCategory()">+ Add</button>
+            </div>
+            <datalist id="category-type-options"></datalist>
+            <datalist id="category-name-options"></datalist>
+            <div class="ingredient-list" id="category-list">
+                <span style="color:#b2bec3; font-size:0.9rem;">No categories added yet</span>
+            </div>
+        </div>
+
         <div class="btn-group">
             <button type="submit" class="btn btn-primary" style="flex:1;">✅ Submit Recipe</button>
             <button type="reset" class="btn btn-secondary">Clear All</button>
@@ -230,6 +254,94 @@
 
     <script>
         let ingredients = [];
+        let categories = [];
+
+        // Trello-style label colors. Same category name always maps to the same color.
+        const CATEGORY_PALETTE = [
+            '#61bd4f', '#ff9f1a', '#eb5a46', '#c377e0', '#0079bf',
+            '#00c2e0', '#51c4d3', '#ff78cb', '#344563', '#c9372c'
+        ];
+        function categoryColor(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = (hash * 31 + name.charCodeAt(i)) | 0;
+            }
+            return CATEGORY_PALETTE[Math.abs(hash) % CATEGORY_PALETTE.length];
+        }
+
+        // Populate the type/name autocomplete lists from existing categories
+        async function loadCategoryOptions() {
+            const res = await fetch('/api/categories');
+            const grouped = await res.json();
+
+            const typeOptions = document.getElementById('category-type-options');
+            typeOptions.innerHTML = Object.keys(grouped).map(type => `<option value="${type}">`).join('');
+
+            const nameOptions = document.getElementById('category-name-options');
+            const allNames = new Set();
+            Object.values(grouped).forEach(cats => cats.forEach(c => allNames.add(c.name)));
+            nameOptions.innerHTML = [...allNames].map(name => `<option value="${name}">`).join('');
+        }
+        loadCategoryOptions();
+
+        function addCategory() {
+            const typeInput = document.getElementById('category-type');
+            const nameInput = document.getElementById('category-name');
+            const type = typeInput.value.trim();
+            const name = nameInput.value.trim();
+
+            if (!type || !name) {
+                alert('Please enter both a category type and a name');
+                return;
+            }
+
+            const formattedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+            const formattedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+
+            const alreadyAdded = categories.some(c => c.type === formattedType && c.name === formattedName);
+            if (!alreadyAdded) {
+                categories.push({ name: formattedName, type: formattedType });
+                renderCategories();
+            }
+
+            typeInput.value = '';
+            nameInput.value = '';
+            typeInput.focus();
+        }
+
+        function removeCategory(index) {
+            categories.splice(index, 1);
+            renderCategories();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('category-list');
+            if (categories.length === 0) {
+                container.innerHTML = '<span style="color:#b2bec3; font-size:0.9rem;">No categories added yet</span>';
+                return;
+            }
+
+            container.innerHTML = categories.map((item, index) => `
+                <span class="ingredient-tag category-tag" style="background:${categoryColor(item.name)};">
+                    ${item.type}: ${item.name}
+                    <span class="remove" onclick="removeCategory(${index})">✕</span>
+                </span>
+            `).join('');
+        }
+
+        // Allow Enter key to add category
+        document.getElementById('category-type').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCategory();
+            }
+        });
+        document.getElementById('category-name').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addCategory();
+            }
+        });
 
         function addIngredient() {
             const nameInput = document.getElementById('ingredient-name');
@@ -311,7 +423,8 @@
                 cost: parseInt(cost),
                 instructions: document.getElementById('instructions').value.trim(),
                 image_url: document.getElementById('image-url').value.trim() || null,
-                ingredients: ingredients
+                ingredients: ingredients,
+                categories: categories
             };
 
             try {
@@ -328,6 +441,9 @@
                     document.getElementById('recipe-form').reset();
                     ingredients = [];
                     renderIngredients();
+                    categories = [];
+                    renderCategories();
+                    loadCategoryOptions();
                     // Scroll to success message
                     document.getElementById('success-msg').scrollIntoView({ behavior: 'smooth' });
                 } else {
